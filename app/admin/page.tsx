@@ -214,6 +214,13 @@ export default function AdminPage() {
                                                 <div className="font-medium">Paragraph</div>
                                                 <div className="text-sm text-gray-500">Text content with title and subtitle</div>
                                             </button>
+                                            <button
+                                                onClick={() => handleCreateNew(ComponentType.IMAGE)}
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                                            >
+                                                <div className="font-medium">Image</div>
+                                                <div className="text-sm text-gray-500">Display an image with optional caption</div>
+                                            </button>
                                         </div>
                                     </>
                                 )}

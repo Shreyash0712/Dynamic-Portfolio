@@ -12,6 +12,7 @@ export interface Component<T = any> {
 // Component types
 export enum ComponentType {
     PARAGRAPH = 'paragraph',
+    IMAGE = 'image',
 }
 
 // Alignment types
@@ -35,11 +36,41 @@ export interface ParagraphProps {
     paragraph_alignment: TextAlignment;
     paragraph_color: string;
     bg_color: string;
-    height: number; // in px
+    padding: number; // vertical padding in px
+}
+
+// Image component props
+export interface ImageProps {
+    // Text content
+    title: string;
+    subtitle: string;
+    paragraph: string;
+    title_color: string;
+    subtitle_color: string;
+    paragraph_color: string;
+    title_font_size: number;
+    subtitle_font_size: number;
+    paragraph_text_size: number;
+    title_font_style: string;
+    subtitle_font_style: string;
+    paragraph_font_style: string;
+
+    // Image
+    image_url: string;
+    image_public_id: string;
+    image_position: 'left' | 'right' | 'center' | 'background';
+    image_opacity: number; // 0-100
+    image_height: number; // image height in px (auto width)
+    accent_color: string; // hex color for overlay
+    image_radius: 'small' | 'medium' | 'large' | 'circle';
+
+    // Layout
+    bg_color: string;
+    padding: number; // vertical padding in px
 }
 
 // Union type for all component props
-export type ComponentProps = ParagraphProps;
+export type ComponentProps = ParagraphProps | ImageProps;
 
 // API request/response types
 export interface CreateComponentRequest {

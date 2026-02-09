@@ -9,11 +9,7 @@ export default function ParagraphComponent({ props }: ParagraphComponentProps) {
         <div
             style={{
                 backgroundColor: props.bg_color,
-                minHeight: `${props.height}px`,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                padding: '2rem',
+                padding: `${props.padding}px 2rem`,
             }}
         >
             <div className="max-w-6xl mx-auto w-full space-y-4">
