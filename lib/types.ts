@@ -13,6 +13,7 @@ export interface Component<T = any> {
 export enum ComponentType {
     PARAGRAPH = 'paragraph',
     IMAGE = 'image',
+    SLIDER = 'slider',
 }
 
 // Alignment types
@@ -69,8 +70,58 @@ export interface ImageProps {
     padding: number; // vertical padding in px
 }
 
+// Slider card interface
+export interface SliderCard {
+    card_title: string;
+    card_subtitle: string;
+    card_title_color: string;
+    card_subtitle_color: string;
+    card_title_font_size: number;
+    card_subtitle_font_size: number;
+    card_title_font_style: string;
+    card_subtitle_font_style: string;
+    image_url: string;
+    image_public_id: string;
+}
+
+// Slider component props
+export interface SliderProps {
+    // Main text
+    title: string;
+    subtitle: string;
+    title_color: string;
+    subtitle_color: string;
+    title_font_size: number;
+    subtitle_font_size: number;
+    title_font_style: string;
+    subtitle_font_style: string;
+    title_alignment: TextAlignment;
+    subtitle_alignment: TextAlignment;
+
+    // Cards
+    cards: SliderCard[];
+
+    // Card styling
+    card_bg_color: string;
+    card_radius: 'small' | 'medium' | 'large';
+
+    // Image settings (common for all cards)
+    image_height: number;
+    image_style: 'bordered' | 'borderless';
+    image_opacity: number;
+    accent_color: string;
+
+    // Animation
+    animation: 'none' | 'steady' | 'focus';
+    direction: 'ltr' | 'rtl'; // applies to both steady and focus
+
+    // Layout
+    bg_color: string;
+    padding: number;
+}
+
 // Union type for all component props
-export type ComponentProps = ParagraphProps | ImageProps;
+export type ComponentProps = ParagraphProps | ImageProps | SliderProps;
 
 // API request/response types
 export interface CreateComponentRequest {

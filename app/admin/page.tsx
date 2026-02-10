@@ -221,6 +221,13 @@ export default function AdminPage() {
                                                 <div className="font-medium">Image</div>
                                                 <div className="text-sm text-gray-500">Display an image with optional caption</div>
                                             </button>
+                                            <button
+                                                onClick={() => handleCreateNew(ComponentType.SLIDER)}
+                                                className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors"
+                                            >
+                                                <div className="font-medium">Slider</div>
+                                                <div className="text-sm text-gray-500">Carousel with multiple cards</div>
+                                            </button>
                                         </div>
                                     </>
                                 )}

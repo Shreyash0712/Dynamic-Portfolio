@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Component, ComponentType, ParagraphProps, ImageProps, TextAlignment } from '@/lib/types';
+import { Component, ComponentType, ParagraphProps, ImageProps, SliderProps, SliderCard, TextAlignment } from '@/lib/types';
 import MediaUploader from './MediaUploader';
 
 // Available Google Fonts
@@ -60,6 +60,30 @@ const DEFAULT_IMAGE_PROPS: ImageProps = {
     padding: 48,
 };
 
+const DEFAULT_SLIDER_PROPS: SliderProps = {
+    title: '',
+    subtitle: '',
+    title_color: '#000000',
+    subtitle_color: '#666666',
+    title_font_size: 48,
+    subtitle_font_size: 24,
+    title_font_style: 'var(--font-inter)',
+    subtitle_font_style: 'var(--font-inter)',
+    title_alignment: 'center',
+    subtitle_alignment: 'center',
+    cards: [],
+    card_bg_color: '#ffffff',
+    card_radius: 'medium',
+    image_height: 300,
+    image_style: 'bordered',
+    image_opacity: 100,
+    accent_color: '#000000',
+    animation: 'none',
+    direction: 'ltr',
+    bg_color: '#f9fafb',
+    padding: 48,
+};
+
 interface ComponentFormProps {
     mode: 'create' | 'edit';
     componentType: ComponentType;
@@ -88,6 +112,14 @@ export default function ComponentForm({ mode, componentType, initialData, onSucc
         return DEFAULT_IMAGE_PROPS;
     });
 
+    // Slider form state
+    const [sliderProps, setSliderProps] = useState<SliderProps>(() => {
+        if (mode === 'edit' && initialData && componentType === ComponentType.SLIDER) {
+            return initialData.props as SliderProps;
+        }
+        return DEFAULT_SLIDER_PROPS;
+    });
+
     // Update form when initialData changes
     useEffect(() => {
         if (mode === 'edit' && initialData) {
@@ -95,6 +127,8 @@ export default function ComponentForm({ mode, componentType, initialData, onSucc
                 setParagraphProps(initialData.props);
             } else if (componentType === ComponentType.IMAGE) {
                 setImageProps(initialData.props);
+            } else if (componentType === ComponentType.SLIDER) {
+                setSliderProps(initialData.props);
             }
         }
     }, [mode, initialData, componentType]);
@@ -115,7 +149,11 @@ export default function ComponentForm({ mode, componentType, initialData, onSucc
                 },
                 body: JSON.stringify({
                     component_type: componentType,
-                    props: componentType === ComponentType.IMAGE ? imageProps : paragraphProps,
+                    props: componentType === ComponentType.PARAGRAPH
+                        ? paragraphProps
+                        : componentType === ComponentType.IMAGE
+                            ? imageProps
+                            : sliderProps,
                     display_order: initialData?.display_order,
                     is_visible: initialData?.is_visible ?? false,
                 }),
@@ -643,6 +681,475 @@ export default function ComponentForm({ mode, componentType, initialData, onSucc
                                         type="number"
                                         value={imageProps.padding}
                                         onChange={(e) => setImageProps({ ...imageProps, padding: Number(e.target.value) })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        min="0"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* SLIDER Component Form */}
+                {componentType === ComponentType.SLIDER && (
+                    <div className="space-y-6">
+                        {/* Main Title/Subtitle Section */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4">Main Title & Subtitle</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium mb-2">Title</label>
+                                    <input
+                                        type="text"
+                                        value={sliderProps.title}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, title: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-medium mb-2">Subtitle</label>
+                                    <input
+                                        type="text"
+                                        value={sliderProps.subtitle}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, subtitle: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Title Color</label>
+                                    <input
+                                        type="color"
+                                        value={sliderProps.title_color}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, title_color: e.target.value })}
+                                        className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Subtitle Color</label>
+                                    <input
+                                        type="color"
+                                        value={sliderProps.subtitle_color}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, subtitle_color: e.target.value })}
+                                        className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Title Font Size (px)</label>
+                                    <input
+                                        type="number"
+                                        value={sliderProps.title_font_size}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, title_font_size: Number(e.target.value) })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Subtitle Font Size (px)</label>
+                                    <input
+                                        type="number"
+                                        value={sliderProps.subtitle_font_size}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, subtitle_font_size: Number(e.target.value) })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Title Font</label>
+                                    <select
+                                        value={sliderProps.title_font_style}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, title_font_style: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        {FONT_OPTIONS.map(font => (
+                                            <option key={font.value} value={font.value}>{font.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Subtitle Font</label>
+                                    <select
+                                        value={sliderProps.subtitle_font_style}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, subtitle_font_style: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        {FONT_OPTIONS.map(font => (
+                                            <option key={font.value} value={font.value}>{font.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Title Alignment</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(['left', 'center', 'right'] as TextAlignment[]).map((align) => (
+                                            <button
+                                                key={align}
+                                                type="button"
+                                                onClick={() => setSliderProps({ ...sliderProps, title_alignment: align })}
+                                                className={`px-4 py-2 rounded-lg border-2 transition-colors capitalize ${sliderProps.title_alignment === align
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-300 hover:border-gray-400'
+                                                    }`}
+                                            >
+                                                {align}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Subtitle Alignment</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(['left', 'center', 'right'] as TextAlignment[]).map((align) => (
+                                            <button
+                                                key={align}
+                                                type="button"
+                                                onClick={() => setSliderProps({ ...sliderProps, subtitle_alignment: align })}
+                                                className={`px-4 py-2 rounded-lg border-2 transition-colors capitalize ${sliderProps.subtitle_alignment === align
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-300 hover:border-gray-400'
+                                                    }`}
+                                            >
+                                                {align}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Cards Section */}
+                        <div>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold">Cards</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const newCard: SliderCard = {
+                                            card_title: '',
+                                            card_subtitle: '',
+                                            card_title_color: '#000000',
+                                            card_subtitle_color: '#666666',
+                                            card_title_font_size: 24,
+                                            card_subtitle_font_size: 16,
+                                            card_title_font_style: 'var(--font-inter)',
+                                            card_subtitle_font_style: 'var(--font-inter)',
+                                            image_url: '',
+                                            image_public_id: '',
+                                        };
+                                        setSliderProps({ ...sliderProps, cards: [...sliderProps.cards, newCard] });
+                                    }}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                                >
+                                    <span className="text-xl">+</span> Add Card
+                                </button>
+                            </div>
+
+                            {sliderProps.cards.length === 0 && (
+                                <p className="text-gray-500 text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                                    No cards yet. Click "Add Card" to create your first card.
+                                </p>
+                            )}
+
+                            {sliderProps.cards.map((card, index) => (
+                                <div key={index} className="border-2 border-gray-200 rounded-lg p-4 mb-4">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h4 className="font-semibold">Card {index + 1}</h4>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newCards = sliderProps.cards.filter((_, i) => i !== index);
+                                                setSliderProps({ ...sliderProps, cards: newCards });
+                                            }}
+                                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-medium mb-2">Card Title</label>
+                                            <input
+                                                type="text"
+                                                value={card.card_title}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_title = e.target.value;
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-medium mb-2">Card Subtitle</label>
+                                            <input
+                                                type="text"
+                                                value={card.card_subtitle}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_subtitle = e.target.value;
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Title Color</label>
+                                            <input
+                                                type="color"
+                                                value={card.card_title_color}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_title_color = e.target.value;
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Subtitle Color</label>
+                                            <input
+                                                type="color"
+                                                value={card.card_subtitle_color}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_subtitle_color = e.target.value;
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Title Font Size (px)</label>
+                                            <input
+                                                type="number"
+                                                value={card.card_title_font_size}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_title_font_size = Number(e.target.value);
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Subtitle Font Size (px)</label>
+                                            <input
+                                                type="number"
+                                                value={card.card_subtitle_font_size}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_subtitle_font_size = Number(e.target.value);
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Title Font</label>
+                                            <select
+                                                value={card.card_title_font_style}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_title_font_style = e.target.value;
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            >
+                                                {FONT_OPTIONS.map(font => (
+                                                    <option key={font.value} value={font.value}>{font.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">Subtitle Font</label>
+                                            <select
+                                                value={card.card_subtitle_font_style}
+                                                onChange={(e) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].card_subtitle_font_style = e.target.value;
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            >
+                                                {FONT_OPTIONS.map(font => (
+                                                    <option key={font.value} value={font.value}>{font.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-medium mb-2">Card Image</label>
+                                            <MediaUploader
+                                                onUploadComplete={(url: string, publicId: string) => {
+                                                    const newCards = [...sliderProps.cards];
+                                                    newCards[index].image_url = url;
+                                                    newCards[index].image_public_id = publicId;
+                                                    setSliderProps({ ...sliderProps, cards: newCards });
+                                                }}
+                                                currentUrl={card.image_url}
+                                                currentPublicId={card.image_public_id}
+                                                acceptedTypes="image"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Card Styling */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4">Card Styling</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Card Background Color</label>
+                                    <input
+                                        type="color"
+                                        value={sliderProps.card_bg_color}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, card_bg_color: e.target.value })}
+                                        className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Card Border Radius</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(['small', 'medium', 'large'] as const).map((radius) => (
+                                            <button
+                                                key={radius}
+                                                type="button"
+                                                onClick={() => setSliderProps({ ...sliderProps, card_radius: radius })}
+                                                className={`px-4 py-2 rounded-lg border-2 transition-colors capitalize ${sliderProps.card_radius === radius
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-300 hover:border-gray-400'
+                                                    }`}
+                                            >
+                                                {radius}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Image Settings */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4">Image Settings (Common for all cards)</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Image Height (px)</label>
+                                    <input
+                                        type="number"
+                                        value={sliderProps.image_height}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, image_height: Number(e.target.value) })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        min="100"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Image Style</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {(['bordered', 'borderless'] as const).map((style) => (
+                                            <button
+                                                key={style}
+                                                type="button"
+                                                onClick={() => setSliderProps({ ...sliderProps, image_style: style })}
+                                                className={`px-4 py-2 rounded-lg border-2 transition-colors capitalize ${sliderProps.image_style === style
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-300 hover:border-gray-400'
+                                                    }`}
+                                            >
+                                                {style}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Image Opacity (%)</label>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={sliderProps.image_opacity}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, image_opacity: Number(e.target.value) })}
+                                        className="w-full"
+                                    />
+                                    <div className="text-sm text-gray-600 mt-1">{sliderProps.image_opacity}%</div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Accent Color Overlay</label>
+                                    <input
+                                        type="color"
+                                        value={sliderProps.accent_color}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, accent_color: e.target.value })}
+                                        className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Color overlay blended with images</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Animation Settings */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4">Animation Settings</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Animation Mode</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(['none', 'steady', 'focus'] as const).map((anim) => (
+                                            <button
+                                                key={anim}
+                                                type="button"
+                                                onClick={() => setSliderProps({ ...sliderProps, animation: anim })}
+                                                className={`px-4 py-2 rounded-lg border-2 transition-colors capitalize ${sliderProps.animation === anim
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-300 hover:border-gray-400'
+                                                    }`}
+                                            >
+                                                {anim}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        None: Manual only • Steady: Constant scroll • Focus: Stop & scale
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Direction</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {(['ltr', 'rtl'] as const).map((dir) => (
+                                            <button
+                                                key={dir}
+                                                type="button"
+                                                onClick={() => setSliderProps({ ...sliderProps, direction: dir })}
+                                                className={`px-4 py-2 rounded-lg border-2 transition-colors uppercase ${sliderProps.direction === dir
+                                                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-300 hover:border-gray-400'
+                                                    }`}
+                                            >
+                                                {dir === 'ltr' ? 'Left → Right' : 'Right → Left'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">Applies to both steady and focus modes</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Layout Settings */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4">Layout</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Background Color</label>
+                                    <input
+                                        type="color"
+                                        value={sliderProps.bg_color}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, bg_color: e.target.value })}
+                                        className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Padding (px)</label>
+                                    <input
+                                        type="number"
+                                        value={sliderProps.padding}
+                                        onChange={(e) => setSliderProps({ ...sliderProps, padding: Number(e.target.value) })}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         min="0"
                                     />
