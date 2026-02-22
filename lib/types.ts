@@ -38,6 +38,7 @@ export interface ParagraphProps {
     paragraph_color: string;
     bg_color: string;
     padding: number; // vertical padding in px
+    full_screen?: boolean; // stretch component to full viewport height
 }
 
 // Image component props
@@ -68,6 +69,7 @@ export interface ImageProps {
     // Layout
     bg_color: string;
     padding: number; // vertical padding in px
+    full_screen?: boolean; // stretch component to full viewport height
 }
 
 // Slider card interface
@@ -118,6 +120,7 @@ export interface SliderProps {
     // Layout
     bg_color: string;
     padding: number;
+    full_screen?: boolean; // stretch component to full viewport height
 }
 
 // Union type for all component props

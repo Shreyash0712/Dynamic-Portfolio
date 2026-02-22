@@ -407,6 +407,18 @@ export default function ComponentForm({ mode, componentType, initialData, onSucc
                                     />
                                 </div>
                             </div>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="paragraph-full-screen"
+                                    checked={!!paragraphProps.full_screen}
+                                    onChange={(e) => setParagraphProps({ ...paragraphProps, full_screen: e.target.checked })}
+                                    className="w-4 h-4 accent-blue-500 cursor-pointer"
+                                />
+                                <label htmlFor="paragraph-full-screen" className="text-sm font-medium cursor-pointer">
+                                    Full Screen — stretch to 100% of viewport height
+                                </label>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -685,6 +697,18 @@ export default function ComponentForm({ mode, componentType, initialData, onSucc
                                         min="0"
                                     />
                                 </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="image-full-screen"
+                                    checked={!!imageProps.full_screen}
+                                    onChange={(e) => setImageProps({ ...imageProps, full_screen: e.target.checked })}
+                                    className="w-4 h-4 accent-blue-500 cursor-pointer"
+                                />
+                                <label htmlFor="image-full-screen" className="text-sm font-medium cursor-pointer">
+                                    Full Screen — stretch to 100% of viewport height
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -1154,6 +1178,18 @@ export default function ComponentForm({ mode, componentType, initialData, onSucc
                                         min="0"
                                     />
                                 </div>
+                            </div>
+                            <div className="flex items-center gap-3 mt-4">
+                                <input
+                                    type="checkbox"
+                                    id="slider-full-screen"
+                                    checked={!!sliderProps.full_screen}
+                                    onChange={(e) => setSliderProps({ ...sliderProps, full_screen: e.target.checked })}
+                                    className="w-4 h-4 accent-blue-500 cursor-pointer"
+                                />
+                                <label htmlFor="slider-full-screen" className="text-sm font-medium cursor-pointer">
+                                    Full Screen — stretch to 100% of viewport height
+                                </label>
                             </div>
                         </div>
                     </div>

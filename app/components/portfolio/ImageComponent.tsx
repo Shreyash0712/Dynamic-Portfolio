@@ -24,6 +24,11 @@ export default function ImageComponent({ props }: ImageComponentProps) {
                     backgroundColor: props.bg_color,
                     overflow: 'hidden',
                     padding: `${props.padding}px 0`,
+                    ...(props.full_screen && {
+                        minHeight: '100vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                    }),
                 }}
             >
                 {/* Background Image */}
@@ -61,6 +66,7 @@ export default function ImageComponent({ props }: ImageComponentProps) {
                         alignItems: 'center',
                         padding: '2rem',
                         textAlign: 'center',
+                        width: '100%',
                     }}
                 >
                     {props.title && (
@@ -114,6 +120,11 @@ export default function ImageComponent({ props }: ImageComponentProps) {
                 style={{
                     backgroundColor: props.bg_color,
                     padding: `${props.padding}px 2rem`,
+                    ...(props.full_screen && {
+                        minHeight: '100vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                    }),
                 }}
             >
                 <div className="max-w-6xl mx-auto w-full space-y-6">
@@ -201,6 +212,11 @@ export default function ImageComponent({ props }: ImageComponentProps) {
             style={{
                 backgroundColor: props.bg_color,
                 padding: `${props.padding}px 2rem`,
+                ...(props.full_screen && {
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                }),
             }}
         >
             <div className="max-w-6xl mx-auto w-full">

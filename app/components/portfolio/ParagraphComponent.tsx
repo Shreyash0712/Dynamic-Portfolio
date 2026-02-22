@@ -10,6 +10,11 @@ export default function ParagraphComponent({ props }: ParagraphComponentProps) {
             style={{
                 backgroundColor: props.bg_color,
                 padding: `${props.padding}px 2rem`,
+                ...(props.full_screen && {
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                }),
             }}
         >
             <div className="max-w-6xl mx-auto w-full space-y-4">

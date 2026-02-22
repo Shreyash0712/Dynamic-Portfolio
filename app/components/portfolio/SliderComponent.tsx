@@ -93,6 +93,11 @@ export default function SliderComponent({ props }: SliderComponentProps) {
                 backgroundColor: props.bg_color,
                 padding: `${props.padding}px 0`,
                 position: 'relative',
+                ...(props.full_screen && {
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                }),
             }}
         >
             <div className="max-w-7xl mx-auto px-4">
