@@ -2,7 +2,7 @@ import BentoGrid from './components/bento/BentoGrid';
 import type { Component, Page } from '@/lib/types';
 
 async function getActiveThemeData(): Promise<{ page: Page | null; components: Component[] }> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXTAUTH_URL;
 
   try {
     // Get all themes and find the active one
