@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { components } from '@/lib/schema';
+import { pages } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
-import { Component, UpdateComponentRequest, ApiResponse, UpdateComponentSchema } from '@/lib/types';
+import { Page, UpdatePageRequest, ApiResponse, UpdatePageSchema } from '@/lib/types';
 
-// GET /api/components/[id] - Fetch a single component (unprotected)
+// GET /api/pages/[id] - Fetch a single page
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -14,40 +14,80 @@ export async function GET(
     try {
         const { id } = await params;
 
-        const [result] = await db.select().from(components).where(eq(components.id, id));
+        const result = await db.query.pages.findFirst({
+            where: eq(pages.id, id),
+            with: {
+                theme: true,
+                components: true,
+            },
+        });
 
         if (!result) {
             const response: ApiResponse = {
                 success: false,
-                error: 'Component not found',
+                error: 'Page not found',
             };
             return NextResponse.json(response, { status: 404 });
         }
 
-        // Map result to Component type (convert Date to string)
+        // Map result to Page type (convert Date to string)
         const mappedResult = {
-            ...result,
+            id: result.id,
+            themeId: result.themeId,
+            name: result.name,
+            slug: result.slug,
+            isVisible: result.isVisible,
             createdAt: result.createdAt.toISOString(),
             updatedAt: result.updatedAt.toISOString(),
+            theme: result.theme ? {
+                id: result.theme.id,
+                name: result.theme.name,
+                isActive: result.theme.isActive,
+                createdAt: result.theme.createdAt.toISOString(),
+                updatedAt: result.theme.updatedAt.toISOString(),
+            } : undefined,
+            components: result.components?.map(comp => ({
+                id: comp.id,
+                pageId: comp.pageId,
+                status: comp.status,
+                isVisible: comp.isVisible,
+                rowStart: comp.rowStart,
+                rowSpan: comp.rowSpan,
+                colStart: comp.colStart,
+                colSpan: comp.colSpan,
+                contentHtml: comp.contentHtml,
+                alignItems: comp.alignItems,
+                justifyContent: comp.justifyContent,
+                bgColor: comp.bgColor,
+                padding: comp.padding,
+                borderRadius: comp.borderRadius,
+                imageUrl: comp.imageUrl,
+                imagePublicId: comp.imagePublicId,
+                imagePosition: comp.imagePosition,
+                imageOpacity: comp.imageOpacity,
+                imageAccentColor: comp.imageAccentColor,
+                createdAt: comp.createdAt.toISOString(),
+                updatedAt: comp.updatedAt.toISOString(),
+            })),
         };
 
-        const response: ApiResponse<Component> = {
+        const response: ApiResponse<Page> = {
             success: true,
-            data: mappedResult as unknown as Component,
+            data: mappedResult as unknown as Page,
         };
 
         return NextResponse.json(response);
     } catch (error) {
-        console.error('Error fetching component:', error);
+        console.error('Error fetching page:', error);
         const response: ApiResponse = {
             success: false,
-            error: 'Failed to fetch component',
+            error: 'Failed to fetch page',
         };
         return NextResponse.json(response, { status: 500 });
     }
 }
 
-// PUT /api/components/[id] - Update a component (protected)
+// PUT /api/pages/[id] - Update a page (protected)
 export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -64,10 +104,10 @@ export async function PUT(
         }
 
         const { id } = await params;
-        const body = await request.json() as UpdateComponentRequest;
+        const body = await request.json() as UpdatePageRequest;
 
         // Validate with Zod
-        const validation = UpdateComponentSchema.safeParse(body);
+        const validation = UpdatePageSchema.safeParse(body);
         if (!validation.success) {
             const response: ApiResponse = {
                 success: false,
@@ -79,24 +119,10 @@ export async function PUT(
         const data = validation.data;
 
         // Build update object with only defined values
-        const updateData: Partial<typeof data> = {};
-        if (data.status !== undefined) updateData.status = data.status;
-        if (data.isVisible !== undefined) updateData.isVisible = data.isVisible;
-        if (data.rowStart !== undefined) (updateData as any).rowStart = data.rowStart;
-        if (data.rowSpan !== undefined) (updateData as any).rowSpan = data.rowSpan;
-        if (data.colStart !== undefined) (updateData as any).colStart = data.colStart;
-        if (data.colSpan !== undefined) (updateData as any).colSpan = data.colSpan;
-        if (data.contentHtml !== undefined) (updateData as any).contentHtml = data.contentHtml;
-        if (data.alignItems !== undefined) (updateData as any).alignItems = data.alignItems;
-        if (data.justifyContent !== undefined) (updateData as any).justifyContent = data.justifyContent;
-        if (data.bgColor !== undefined) (updateData as any).bgColor = data.bgColor;
-        if (data.padding !== undefined) (updateData as any).padding = data.padding;
-        if (data.borderRadius !== undefined) (updateData as any).borderRadius = data.borderRadius;
-        if (data.imageUrl !== undefined) (updateData as any).imageUrl = data.imageUrl;
-        if (data.imagePublicId !== undefined) (updateData as any).imagePublicId = data.imagePublicId;
-        if (data.imagePosition !== undefined) (updateData as any).imagePosition = data.imagePosition;
-        if (data.imageOpacity !== undefined) (updateData as any).imageOpacity = data.imageOpacity;
-        if (data.imageAccentColor !== undefined) (updateData as any).imageAccentColor = data.imageAccentColor;
+        const updateData: Record<string, unknown> = {};
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.slug !== undefined) updateData.slug = data.slug;
+                if (data.isVisible !== undefined) updateData.isVisible = data.isVisible;
 
         if (Object.keys(updateData).length === 0) {
             const response: ApiResponse = {
@@ -106,43 +132,47 @@ export async function PUT(
             return NextResponse.json(response, { status: 400 });
         }
 
-        const [result] = await db.update(components)
+        const [result] = await db.update(pages)
             .set(updateData)
-            .where(eq(components.id, id))
+            .where(eq(pages.id, id))
             .returning();
 
         if (!result) {
             const response: ApiResponse = {
                 success: false,
-                error: 'Component not found',
+                error: 'Page not found',
             };
             return NextResponse.json(response, { status: 404 });
         }
 
-        // Map result to Component type (convert Date to string)
+        // Map result to Page type (convert Date to string)
         const mappedResult = {
-            ...result,
+            id: result.id,
+            themeId: result.themeId,
+            name: result.name,
+            slug: result.slug,
+            isVisible: result.isVisible,
             createdAt: result.createdAt.toISOString(),
             updatedAt: result.updatedAt.toISOString(),
         };
 
-        const response: ApiResponse<Component> = {
+        const response: ApiResponse<Page> = {
             success: true,
-            data: mappedResult as unknown as Component,
+            data: mappedResult as unknown as Page,
         };
 
         return NextResponse.json(response);
     } catch (error) {
-        console.error('Error updating component:', error);
+        console.error('Error updating page:', error);
         const response: ApiResponse = {
             success: false,
-            error: 'Failed to update component',
+            error: 'Failed to update page',
         };
         return NextResponse.json(response, { status: 500 });
     }
 }
 
-// DELETE /api/components/[id] - Delete a component (protected)
+// DELETE /api/pages/[id] - Delete a page (protected)
 export async function DELETE(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -160,36 +190,40 @@ export async function DELETE(
 
         const { id } = await params;
 
-        const [result] = await db.delete(components)
-            .where(eq(components.id, id))
+        const [result] = await db.delete(pages)
+            .where(eq(pages.id, id))
             .returning();
 
         if (!result) {
             const response: ApiResponse = {
                 success: false,
-                error: 'Component not found',
+                error: 'Page not found',
             };
             return NextResponse.json(response, { status: 404 });
         }
 
-        // Map result to Component type (convert Date to string)
+        // Map result to Page type (convert Date to string)
         const mappedResult = {
-            ...result,
+            id: result.id,
+            themeId: result.themeId,
+            name: result.name,
+            slug: result.slug,
+            isVisible: result.isVisible,
             createdAt: result.createdAt.toISOString(),
             updatedAt: result.updatedAt.toISOString(),
         };
 
-        const response: ApiResponse<Component> = {
+        const response: ApiResponse<Page> = {
             success: true,
-            data: mappedResult as unknown as Component,
+            data: mappedResult as unknown as Page,
         };
 
         return NextResponse.json(response);
     } catch (error) {
-        console.error('Error deleting component:', error);
+        console.error('Error deleting page:', error);
         const response: ApiResponse = {
             success: false,
-            error: 'Failed to delete component',
+            error: 'Failed to delete page',
         };
         return NextResponse.json(response, { status: 500 });
     }

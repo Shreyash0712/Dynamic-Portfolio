@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Roboto, Poppins, Montserrat, Open_Sans, Lato, Playfair_Display, Merriweather } from "next/font/google";
 import "./globals.css";
+import { ToastProvider } from "./hooks/useToast";
 
 // Popular Google Fonts
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -27,7 +28,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${roboto.variable} ${poppins.variable} ${montserrat.variable} ${openSans.variable} ${lato.variable} ${playfair.variable} ${merriweather.variable} antialiased`}
       >
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

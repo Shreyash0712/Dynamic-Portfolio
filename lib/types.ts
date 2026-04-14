@@ -1,148 +1,125 @@
-// Component database schema types
-export interface Component<T = any> {
-    id: string;
-    component_type: ComponentType;
-    props: T;
-    display_order: number;
-    is_visible: boolean;
-    created_at: string;
-    updated_at: string;
-}
+import { z } from 'zod';
 
-// Component types
-export enum ComponentType {
-    PARAGRAPH = 'paragraph',
-    IMAGE = 'image',
-    SLIDER = 'slider',
-}
+// Zod schemas for validation
+export const StatusSchema = z.enum(['draft', 'published']);
+export const AlignItemsSchema = z.enum(['start', 'center', 'end', 'stretch']);
+export const JustifyContentSchema = z.enum(['start', 'center', 'end', 'between', 'around']);
+export const ImagePositionSchema = z.enum(['left', 'right', 'center', 'background', 'none']);
+export const BorderRadiusSchema = z.enum(['small', 'medium', 'large', 'circle']);
 
-// Alignment types
-export type TextAlignment = 'left' | 'center' | 'right' | 'justify';
+// Component schema
+export const ComponentSchema = z.object({
+    id: z.string().uuid(),
+    pageId: z.string().uuid(),
+    status: StatusSchema,
+    isVisible: z.boolean(),
+    rowStart: z.number().int().min(1).max(100),
+    rowSpan: z.number().int().min(1).max(12),
+    colStart: z.number().int().min(1).max(100),
+    colSpan: z.number().int().min(1).max(12),
+    contentHtml: z.string().nullable(),
+    alignItems: AlignItemsSchema.nullable(),
+    justifyContent: JustifyContentSchema.nullable(),
+    bgColor: z.string().nullable(),
+    padding: z.number().int().nullable(),
+    borderRadius: BorderRadiusSchema.nullable(),
+    imageUrl: z.string().nullable(),
+    imagePublicId: z.string().nullable(),
+    imagePosition: ImagePositionSchema.nullable(),
+    imageOpacity: z.number().int().min(0).max(100).nullable(),
+    imageAccentColor: z.string().nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+});
 
-// Paragraph component props
-export interface ParagraphProps {
-    title: string;
-    subtitle: string;
-    title_color: string;
-    subtitle_color: string;
-    title_font_size: number; // in px
-    title_font_style: string; // font family
-    subtitle_font_size: number; // in px
-    subtitle_font_style: string; // font family
-    title_alignment: TextAlignment;
-    subtitle_alignment: TextAlignment;
-    paragraph: string; // HTML content for rich text
-    paragraph_text_size: number; // in px
-    paragraph_font_style: string; // font family
-    paragraph_alignment: TextAlignment;
-    paragraph_color: string;
-    bg_color: string;
-    padding: number; // vertical padding in px
-    full_screen?: boolean; // stretch component to full viewport height
-}
+// Page schema
+export const PageSchema = z.object({
+    id: z.string().uuid(),
+    themeId: z.string().uuid(),
+    name: z.string(),
+    slug: z.string(),
+    isVisible: z.boolean(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+});
 
-// Image component props
-export interface ImageProps {
-    // Text content
-    title: string;
-    subtitle: string;
-    paragraph: string;
-    title_color: string;
-    subtitle_color: string;
-    paragraph_color: string;
-    title_font_size: number;
-    subtitle_font_size: number;
-    paragraph_text_size: number;
-    title_font_style: string;
-    subtitle_font_style: string;
-    paragraph_font_style: string;
+// Theme schema
+export const ThemeSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    isActive: z.boolean(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+});
 
-    // Image
-    image_url: string;
-    image_public_id: string;
-    image_position: 'left' | 'right' | 'center' | 'background';
-    image_opacity: number; // 0-100
-    image_height: number; // image height in px (auto width)
-    accent_color: string; // hex color for overlay
-    image_radius: 'small' | 'medium' | 'large' | 'circle';
+// Create/Update request schemas
+export const CreateComponentSchema = z.object({
+    pageId: z.string().uuid(),
+    status: StatusSchema.optional(),
+    isVisible: z.boolean().optional(),
+    rowStart: z.number().int().min(1).optional(),
+    rowSpan: z.number().int().min(1).max(12).optional(),
+    colStart: z.number().int().min(1).optional(),
+    colSpan: z.number().int().min(1).max(12).optional(),
+    contentHtml: z.string().optional(),
+    alignItems: AlignItemsSchema.optional(),
+    justifyContent: JustifyContentSchema.optional(),
+    bgColor: z.string().optional(),
+    padding: z.number().int().optional(),
+    borderRadius: BorderRadiusSchema.optional(),
+    imageUrl: z.string().optional(),
+    imagePublicId: z.string().optional(),
+    imagePosition: ImagePositionSchema.optional(),
+    imageOpacity: z.number().int().min(0).max(100).optional(),
+    imageAccentColor: z.string().optional(),
+});
 
-    // Layout
-    bg_color: string;
-    padding: number; // vertical padding in px
-    full_screen?: boolean; // stretch component to full viewport height
-}
+export const UpdateComponentSchema = CreateComponentSchema.partial().omit({ pageId: true });
 
-// Slider card interface
-export interface SliderCard {
-    card_title: string;
-    card_subtitle: string;
-    card_title_color: string;
-    card_subtitle_color: string;
-    card_title_font_size: number;
-    card_subtitle_font_size: number;
-    card_title_font_style: string;
-    card_subtitle_font_style: string;
-    image_url: string;
-    image_public_id: string;
-}
+export const CreatePageSchema = z.object({
+    themeId: z.string().uuid(),
+    name: z.string().min(1),
+    slug: z.string().min(1),
+    isVisible: z.boolean().optional(),
+});
 
-// Slider component props
-export interface SliderProps {
-    // Main text
-    title: string;
-    subtitle: string;
-    title_color: string;
-    subtitle_color: string;
-    title_font_size: number;
-    subtitle_font_size: number;
-    title_font_style: string;
-    subtitle_font_style: string;
-    title_alignment: TextAlignment;
-    subtitle_alignment: TextAlignment;
+export const UpdatePageSchema = CreatePageSchema.partial().omit({ themeId: true });
 
-    // Cards
-    cards: SliderCard[];
+export const CreateThemeSchema = z.object({
+    name: z.string().min(1),
+    isActive: z.boolean().optional(),
+});
 
-    // Card styling
-    card_bg_color: string;
-    card_radius: 'small' | 'medium' | 'large';
+export const UpdateThemeSchema = CreateThemeSchema.partial();
 
-    // Image settings (common for all cards)
-    image_height: number;
-    image_style: 'bordered' | 'borderless';
-    image_opacity: number;
-    accent_color: string;
+// TypeScript types derived from Zod schemas
+export type Status = z.infer<typeof StatusSchema>;
+export type AlignItems = z.infer<typeof AlignItemsSchema>;
+export type JustifyContent = z.infer<typeof JustifyContentSchema>;
+export type ImagePosition = z.infer<typeof ImagePositionSchema>;
+export type BorderRadius = z.infer<typeof BorderRadiusSchema>;
 
-    // Animation
-    animation: 'none' | 'steady' | 'focus';
-    direction: 'ltr' | 'rtl'; // applies to both steady and focus
+export type Component = z.infer<typeof ComponentSchema>;
+export type CreateComponentRequest = z.infer<typeof CreateComponentSchema>;
+export type UpdateComponentRequest = z.infer<typeof UpdateComponentSchema>;
 
-    // Layout
-    bg_color: string;
-    padding: number;
-    full_screen?: boolean; // stretch component to full viewport height
-}
+export type Page = z.infer<typeof PageSchema>;
+export type CreatePageRequest = z.infer<typeof CreatePageSchema>;
+export type UpdatePageRequest = z.infer<typeof UpdatePageSchema>;
 
-// Union type for all component props
-export type ComponentProps = ParagraphProps | ImageProps | SliderProps;
+export type Theme = z.infer<typeof ThemeSchema>;
+export type CreateThemeRequest = z.infer<typeof CreateThemeSchema>;
+export type UpdateThemeRequest = z.infer<typeof UpdateThemeSchema>;
 
-// API request/response types
-export interface CreateComponentRequest {
-    component_type: ComponentType | string;
-    props: ComponentProps | Record<string, any>;
-    display_order?: number;
-    is_visible?: boolean;
-}
-
-export interface UpdateComponentRequest {
-    component_type?: ComponentType | string;
-    props?: ComponentProps | Record<string, any>;
-    display_order?: number;
-    is_visible?: boolean;
-}
-
-export interface ApiResponse<T = any> {
+// API response type
+export interface ApiResponse<T = unknown> {
     success: boolean;
     data?: T;
     error?: string;
 }
+
+// Extended types with relations
+export type ComponentWithPage = Component & { page: Page };
+export type PageWithComponents = Page & { components: Component[] };
+export type PageWithTheme = Page & { theme: Theme };
+export type ThemeWithPages = Theme & { pages: Page[] };

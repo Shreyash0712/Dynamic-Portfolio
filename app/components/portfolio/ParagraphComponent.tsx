@@ -1,69 +1,43 @@
-import { ParagraphProps } from '@/lib/types';
+import type { Component } from '@/lib/types';
 
 interface ParagraphComponentProps {
-    props: ParagraphProps;
+    component: Component;
 }
 
-export default function ParagraphComponent({ props }: ParagraphComponentProps) {
+export default function ParagraphComponent({ component }: ParagraphComponentProps) {
+    const getBorderRadius = () => {
+        switch (component.borderRadius) {
+            case 'small': return '12px';
+            case 'medium': return '24px';
+            case 'large': return '48px';
+            case 'circle': return '50%';
+            default: return '24px';
+        }
+    };
+
     return (
         <div
             style={{
-                backgroundColor: props.bg_color,
-                padding: `${props.padding}px 2rem`,
-                ...(props.full_screen && {
-                    minHeight: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                }),
+                backgroundColor: component.bgColor || undefined,
+                padding: component.padding ? `${component.padding}px` : '24px',
+                borderRadius: getBorderRadius(),
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: component.alignItems || 'center',
+                justifyContent: component.justifyContent || 'center',
+                height: '100%',
+                overflow: 'hidden',
             }}
         >
-            <div className="max-w-6xl mx-auto w-full space-y-4">
-                {/* Title */}
-                {props.title && (
-                    <h1
-                        style={{
-                            color: props.title_color,
-                            fontSize: `${props.title_font_size}px`,
-                            fontFamily: props.title_font_style,
-                            textAlign: props.title_alignment,
-                            margin: 0,
-                            fontWeight: 'bold',
-                        }}
-                    >
-                        {props.title}
-                    </h1>
-                )}
-
-                {/* Subtitle */}
-                {props.subtitle && (
-                    <h2
-                        style={{
-                            color: props.subtitle_color,
-                            fontSize: `${props.subtitle_font_size}px`,
-                            fontFamily: props.subtitle_font_style,
-                            textAlign: props.subtitle_alignment,
-                            margin: 0,
-                            fontWeight: '600',
-                        }}
-                    >
-                        {props.subtitle}
-                    </h2>
-                )}
-
-                {/* Paragraph */}
-                {props.paragraph && (
-                    <div
-                        style={{
-                            color: props.paragraph_color,
-                            fontSize: `${props.paragraph_text_size}px`,
-                            fontFamily: props.paragraph_font_style,
-                            textAlign: props.paragraph_alignment,
-                            lineHeight: '1.6',
-                        }}
-                        dangerouslySetInnerHTML={{ __html: props.paragraph }}
-                    />
-                )}
-            </div>
+            {component.contentHtml && (
+                <div
+                    className="w-full"
+                    style={{
+                        lineHeight: '1.6',
+                    }}
+                    dangerouslySetInnerHTML={{ __html: component.contentHtml }}
+                />
+            )}
         </div>
     );
 }

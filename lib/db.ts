@@ -1,38 +1,39 @@
-import { Pool } from 'pg';
+import { drizzle, NeonDatabase } from 'drizzle-orm/neon-serverless';
+import { neon } from '@neondatabase/serverless';
+import * as schema from './schema';
 
-// Create a singleton connection pool
-let pool: Pool | null = null;
+type Database = NeonDatabase<typeof schema>;
 
-export function getPool(): Pool {
-    if (!pool) {
-        pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: {
-                rejectUnauthorized: false,
-            },
-        });
+// Create a singleton database client
+let dbInstance: Database | null = null;
+let sqlInstance: ReturnType<typeof neon> | null = null;
 
-        // Handle pool errors
-        pool.on('error', (err) => {
-            console.error('Unexpected error on idle client', err);
-            process.exit(-1);
-        });
+export function getDb(): Database {
+    if (!dbInstance) {
+        dbInstance = drizzle(process.env.DATABASE_URL!, { schema });
     }
-
-    return pool;
+    return dbInstance;
 }
 
-// Helper function to query the database
-export async function query(text: string, params?: any[]) {
-    const pool = getPool();
-    const start = Date.now();
-    try {
-        const res = await pool.query(text, params);
-        const duration = Date.now() - start;
-        console.log('Executed query', { text, duration, rows: res.rowCount });
-        return res;
-    } catch (error) {
-        console.error('Database query error:', error);
-        throw error;
+// Get raw SQL client for queries
+function getSql() {
+    if (!sqlInstance) {
+        sqlInstance = neon(process.env.DATABASE_URL!);
     }
+    return sqlInstance;
 }
+
+// Raw SQL query function for non-Drizzle queries
+export async function query(sqlString: string, params?: unknown[]) {
+    const sqlClient = getSql();
+    const rows = params
+        ? await (sqlClient as any).query(sqlString, params)
+        : await (sqlClient as any)(sqlString);
+    return { rows };
+}
+
+// Export db for direct use
+export const db = getDb();
+
+// Re-export schema for convenience
+export { schema };

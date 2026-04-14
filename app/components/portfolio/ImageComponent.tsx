@@ -1,327 +1,129 @@
-import { ImageProps } from '@/lib/types';
+import type { Component } from '@/lib/types';
 
 interface ImageComponentProps {
-    props: ImageProps;
+    component: Component;
 }
 
-export default function ImageComponent({ props }: ImageComponentProps) {
+export default function ImageComponent({ component }: ImageComponentProps) {
     const getBorderRadius = () => {
-        switch (props.image_radius) {
+        switch (component.borderRadius) {
             case 'small': return '12px';
             case 'medium': return '24px';
             case 'large': return '48px';
             case 'circle': return '50%';
-            default: return '12px';
+            default: return '24px';
         }
     };
 
+    const opacity = component.imageOpacity ? component.imageOpacity / 100 : 1;
+
     // Background mode - image as full background with overlay
-    if (props.image_position === 'background') {
+    if (component.imagePosition === 'background') {
         return (
             <div
                 style={{
                     position: 'relative',
-                    backgroundColor: props.bg_color,
+                    backgroundColor: component.bgColor || undefined,
                     overflow: 'hidden',
-                    padding: `${props.padding}px 0`,
-                    ...(props.full_screen && {
-                        minHeight: '100vh',
-                        display: 'flex',
-                        alignItems: 'center',
-                    }),
+                    borderRadius: getBorderRadius(),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: component.alignItems || 'center',
+                    justifyContent: component.justifyContent || 'center',
+                    height: '100%',
+                    padding: component.padding ? `${component.padding}px` : '24px',
                 }}
             >
                 {/* Background Image */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: `url(${props.image_url})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        opacity: props.image_opacity / 100,
-                    }}
-                />
-
-                {/* Accent Color Overlay */}
-                {props.accent_color && (
+                {component.imageUrl && (
                     <div
                         style={{
                             position: 'absolute',
                             inset: 0,
-                            backgroundColor: props.accent_color,
+                            backgroundImage: `url(${component.imageUrl})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            opacity,
+                            borderRadius: getBorderRadius(),
+                        }}
+                    />
+                )}
+
+                {/* Accent Color Overlay */}
+                {component.imageAccentColor && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            backgroundColor: component.imageAccentColor,
                             mixBlendMode: 'multiply',
+                            borderRadius: getBorderRadius(),
                         }}
                     />
                 )}
 
                 {/* Content */}
-                <div
-                    style={{
-                        position: 'relative',
-                        zIndex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        padding: '2rem',
-                        textAlign: 'center',
-                        width: '100%',
-                    }}
-                >
-                    {props.title && (
-                        <h1
-                            style={{
-                                color: props.title_color,
-                                fontSize: `${props.title_font_size}px`,
-                                fontFamily: props.title_font_style,
-                                margin: 0,
-                                fontWeight: 'bold',
-                            }}
-                        >
-                            {props.title}
-                        </h1>
-                    )}
-                    {props.subtitle && (
-                        <h2
-                            style={{
-                                color: props.subtitle_color,
-                                fontSize: `${props.subtitle_font_size}px`,
-                                fontFamily: props.subtitle_font_style,
-                                margin: '0.5rem 0 0 0',
-                                fontWeight: '600',
-                            }}
-                        >
-                            {props.subtitle}
-                        </h2>
-                    )}
-                    {props.paragraph && (
-                        <div
-                            style={{
-                                color: props.paragraph_color,
-                                fontSize: `${props.paragraph_text_size}px`,
-                                fontFamily: props.paragraph_font_style,
-                                marginTop: '1rem',
-                                lineHeight: '1.6',
-                                maxWidth: '800px',
-                            }}
-                            dangerouslySetInnerHTML={{ __html: props.paragraph }}
-                        />
-                    )}
-                </div>
+                {component.contentHtml && (
+                    <div
+                        style={{
+                            position: 'relative',
+                            zIndex: 1,
+                            width: '100%',
+                        }}
+                        dangerouslySetInnerHTML={{ __html: component.contentHtml }}
+                    />
+                )}
             </div>
         );
     }
 
-    // Center mode - text above, image below
-    if (props.image_position === 'center') {
-        return (
-            <div
-                style={{
-                    backgroundColor: props.bg_color,
-                    padding: `${props.padding}px 2rem`,
-                    ...(props.full_screen && {
-                        minHeight: '100vh',
-                        display: 'flex',
-                        alignItems: 'center',
-                    }),
-                }}
-            >
-                <div className="max-w-6xl mx-auto w-full space-y-6">
-                    {/* Text Content */}
-                    <div style={{ textAlign: 'center' }}>
-                        {props.title && (
-                            <h1
-                                style={{
-                                    color: props.title_color,
-                                    fontSize: `${props.title_font_size}px`,
-                                    fontFamily: props.title_font_style,
-                                    margin: 0,
-                                    fontWeight: 'bold',
-                                }}
-                            >
-                                {props.title}
-                            </h1>
-                        )}
-                        {props.subtitle && (
-                            <h2
-                                style={{
-                                    color: props.subtitle_color,
-                                    fontSize: `${props.subtitle_font_size}px`,
-                                    fontFamily: props.subtitle_font_style,
-                                    margin: '0.5rem 0 0 0',
-                                    fontWeight: '600',
-                                }}
-                            >
-                                {props.subtitle}
-                            </h2>
-                        )}
-                        {props.paragraph && (
-                            <div
-                                style={{
-                                    color: props.paragraph_color,
-                                    fontSize: `${props.paragraph_text_size}px`,
-                                    fontFamily: props.paragraph_font_style,
-                                    marginTop: '1rem',
-                                    lineHeight: '1.6',
-                                }}
-                                dangerouslySetInnerHTML={{ __html: props.paragraph }}
-                            />
-                        )}
-                    </div>
-
-                    {/* Image */}
-                    <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
-                        <div style={{ position: 'relative' }}>
-                            <img
-                                src={props.image_url}
-                                alt="Component image"
-                                style={{
-                                    width: '100%',
-                                    maxHeight: `${props.image_height}px`,
-                                    height: 'auto',
-                                    objectFit: 'cover',
-                                    borderRadius: getBorderRadius(),
-                                    opacity: props.image_opacity / 100,
-                                }}
-                            />
-                            {props.accent_color && (
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        backgroundColor: props.accent_color,
-                                        borderRadius: getBorderRadius(),
-                                        mixBlendMode: 'multiply',
-                                        pointerEvents: 'none',
-                                    }}
-                                />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Left/Right mode - side by side on desktop, stacked on mobile
-    const isImageLeft = props.image_position === 'left';
+    // Standard mode with image and content
+    const isImageLeft = component.imagePosition === 'left';
+    const isImageRight = component.imagePosition === 'right';
+    const showSideBySide = isImageLeft || isImageRight;
 
     return (
         <div
             style={{
-                backgroundColor: props.bg_color,
-                padding: `${props.padding}px 2rem`,
-                ...(props.full_screen && {
-                    minHeight: '100vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                }),
+                backgroundColor: component.bgColor || undefined,
+                padding: component.padding ? `${component.padding}px` : '24px',
+                borderRadius: getBorderRadius(),
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: component.alignItems || 'center',
+                justifyContent: component.justifyContent || 'center',
+                height: '100%',
+                overflow: 'hidden',
             }}
         >
-            <div className="max-w-6xl mx-auto w-full">
-                {/* Mobile: Always center layout (text above, image below) */}
-                <div className="md:hidden space-y-6">
-                    {/* Text Content */}
-                    <div>
-                        {props.title && (
-                            <h1
-                                style={{
-                                    color: props.title_color,
-                                    fontSize: `${props.title_font_size}px`,
-                                    fontFamily: props.title_font_style,
-                                    margin: 0,
-                                    fontWeight: 'bold',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                {props.title}
-                            </h1>
-                        )}
-                        {props.subtitle && (
-                            <h2
-                                style={{
-                                    color: props.subtitle_color,
-                                    fontSize: `${props.subtitle_font_size}px`,
-                                    fontFamily: props.subtitle_font_style,
-                                    margin: '0.5rem 0 0 0',
-                                    fontWeight: '600',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                {props.subtitle}
-                            </h2>
-                        )}
-                        {props.paragraph && (
-                            <div
-                                style={{
-                                    color: props.paragraph_color,
-                                    fontSize: `${props.paragraph_text_size}px`,
-                                    fontFamily: props.paragraph_font_style,
-                                    marginTop: '1rem',
-                                    lineHeight: '1.6',
-                                    textAlign: 'left',
-                                }}
-                                dangerouslySetInnerHTML={{ __html: props.paragraph }}
-                            />
-                        )}
-                    </div>
-
-                    {/* Image */}
-                    <div style={{ position: 'relative' }}>
-                        <img
-                            src={props.image_url}
-                            alt="Component image"
-                            style={{
-                                width: '100%',
-                                maxHeight: `${props.image_height}px`,
-                                height: 'auto',
-                                objectFit: 'cover',
-                                borderRadius: getBorderRadius(),
-                                opacity: props.image_opacity / 100,
-                            }}
-                        />
-                        {props.accent_color && (
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    backgroundColor: props.accent_color,
-                                    borderRadius: getBorderRadius(),
-                                    mixBlendMode: 'multiply',
-                                    pointerEvents: 'none',
-                                }}
-                            />
-                        )}
-                    </div>
-                </div>
-
-                {/* Desktop: Side by side layout */}
-                <div className="hidden md:grid md:grid-cols-2 gap-8 items-center">
-                    {/* Image Column */}
+            <div className={showSideBySide ? 'grid md:grid-cols-2 gap-4 items-center h-full' : 'space-y-4 w-full'}>
+                {/* Image */}
+                {component.imageUrl && (
                     <div
-                        className={isImageLeft ? 'order-1' : 'order-2'}
+                        className={showSideBySide
+                            ? (isImageLeft ? 'order-1' : 'order-2')
+                            : 'w-full'
+                        }
                         style={{ position: 'relative' }}
                     >
                         <div style={{ position: 'relative' }}>
                             <img
-                                src={props.image_url}
-                                alt="Component image"
+                                src={component.imageUrl}
+                                alt=""
                                 style={{
                                     width: '100%',
-                                    maxHeight: `${props.image_height}px`,
                                     height: 'auto',
                                     objectFit: 'cover',
                                     borderRadius: getBorderRadius(),
-                                    opacity: props.image_opacity / 100,
+                                    opacity,
                                 }}
                             />
-                            {props.accent_color && (
+                            {component.imageAccentColor && (
                                 <div
                                     style={{
                                         position: 'absolute',
                                         inset: 0,
-                                        backgroundColor: props.accent_color,
+                                        backgroundColor: component.imageAccentColor,
                                         borderRadius: getBorderRadius(),
                                         mixBlendMode: 'multiply',
                                         pointerEvents: 'none',
@@ -330,52 +132,21 @@ export default function ImageComponent({ props }: ImageComponentProps) {
                             )}
                         </div>
                     </div>
+                )}
 
-                    {/* Text Column */}
-                    <div className={isImageLeft ? 'order-2' : 'order-1'}>
-                        {props.title && (
-                            <h1
-                                style={{
-                                    color: props.title_color,
-                                    fontSize: `${props.title_font_size}px`,
-                                    fontFamily: props.title_font_style,
-                                    margin: 0,
-                                    fontWeight: 'bold',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                {props.title}
-                            </h1>
-                        )}
-                        {props.subtitle && (
-                            <h2
-                                style={{
-                                    color: props.subtitle_color,
-                                    fontSize: `${props.subtitle_font_size}px`,
-                                    fontFamily: props.subtitle_font_style,
-                                    margin: '0.5rem 0 0 0',
-                                    fontWeight: '600',
-                                    textAlign: 'left',
-                                }}
-                            >
-                                {props.subtitle}
-                            </h2>
-                        )}
-                        {props.paragraph && (
-                            <div
-                                style={{
-                                    color: props.paragraph_color,
-                                    fontSize: `${props.paragraph_text_size}px`,
-                                    fontFamily: props.paragraph_font_style,
-                                    marginTop: '1rem',
-                                    lineHeight: '1.6',
-                                    textAlign: 'left',
-                                }}
-                                dangerouslySetInnerHTML={{ __html: props.paragraph }}
-                            />
-                        )}
-                    </div>
-                </div>
+                {/* Content */}
+                {component.contentHtml && (
+                    <div
+                        className={showSideBySide
+                            ? (isImageLeft ? 'order-2' : 'order-1')
+                            : 'w-full'
+                        }
+                        style={{
+                            lineHeight: '1.6',
+                        }}
+                        dangerouslySetInnerHTML={{ __html: component.contentHtml }}
+                    />
+                )}
             </div>
         </div>
     );

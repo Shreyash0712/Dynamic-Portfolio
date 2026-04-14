@@ -1,19 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { query } from '@/lib/db';
-import { Component, CreateComponentRequest, ApiResponse } from '@/lib/types';
+import { db } from '@/lib/db';
+import { components, pages, themes } from '@/lib/schema';
+import { eq, and, desc, asc } from 'drizzle-orm';
+import {
+    CreateComponentSchema,
+    type CreateComponentRequest,
+    type ApiResponse,
+    type Component,
+} from '@/lib/types';
 
-// GET /api/components - Fetch all components (unprotected)
-export async function GET() {
+// GET /api/components - Fetch components (query by pageId or return all published)
+export async function GET(request: NextRequest) {
     try {
-        const result = await query(
-            'SELECT * FROM components ORDER BY display_order ASC'
-        );
+        const { searchParams } = new URL(request.url);
+        const pageId = searchParams.get('pageId');
+        const status = searchParams.get('status') || 'published';
+
+        let result;
+
+        if (pageId) {
+            // Fetch components for a specific page
+            result = await db.query.components.findMany({
+                where: and(
+                    eq(components.pageId, pageId),
+                    eq(components.status, status)
+                ),
+                orderBy: [asc(components.rowStart), asc(components.colStart)],
+            });
+        } else {
+            // Fetch all published components for the active theme
+            result = await db.query.components.findMany({
+                where: eq(components.status, status),
+                with: {
+                    page: {
+                        with: {
+                            theme: true,
+                        },
+                    },
+                },
+                orderBy: [asc(components.rowStart), asc(components.colStart)],
+            });
+        }
+
+        // Map Drizzle results to Component type (convert Date to string)
+        const mappedResult = result.map(item => ({
+            ...item,
+            createdAt: item.createdAt.toISOString(),
+            updatedAt: item.updatedAt.toISOString(),
+        }));
 
         const response: ApiResponse<Component[]> = {
             success: true,
-            data: result.rows,
+            data: mappedResult as unknown as Component[],
         };
 
         return NextResponse.json(response);
@@ -40,42 +80,52 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(response, { status: 401 });
         }
 
-        const body: CreateComponentRequest = await request.json();
+        const body = await request.json() as CreateComponentRequest;
 
-        // Validate required fields (display_order is now optional)
-        if (!body.component_type || !body.props) {
+        // Validate with Zod
+        const validation = CreateComponentSchema.safeParse(body);
+        if (!validation.success) {
             const response: ApiResponse = {
                 success: false,
-                error: 'Missing required fields: component_type, props',
+                error: validation.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', '),
             };
             return NextResponse.json(response, { status: 400 });
         }
 
-        // Get max display_order and add 1 for new component (or use 1 if no components exist)
-        let displayOrder = body.display_order;
-        if (displayOrder === undefined || displayOrder === 0) {
-            const maxOrderResult = await query(
-                'SELECT COALESCE(MAX(display_order), 0) as max_order FROM components'
-            );
-            displayOrder = maxOrderResult.rows[0].max_order + 1;
-        }
+        const data = validation.data;
 
         // Insert new component
-        const result = await query(
-            `INSERT INTO components (component_type, props, display_order, is_visible)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-            [
-                body.component_type,
-                JSON.stringify(body.props),
-                displayOrder,
-                body.is_visible ?? true,
-            ]
-        );
+        const [result] = await db.insert(components).values({
+            pageId: data.pageId,
+            status: data.status || 'draft',
+            isVisible: data.isVisible ?? true,
+            rowStart: data.rowStart || 1,
+            rowSpan: data.rowSpan || 1,
+            colStart: data.colStart || 1,
+            colSpan: data.colSpan || 1,
+            contentHtml: data.contentHtml || null,
+            alignItems: data.alignItems || 'center',
+            justifyContent: data.justifyContent || 'center',
+            bgColor: data.bgColor || null,
+            padding: data.padding ?? 24,
+            borderRadius: data.borderRadius || 'medium',
+            imageUrl: data.imageUrl || null,
+            imagePublicId: data.imagePublicId || null,
+            imagePosition: data.imagePosition || 'none',
+            imageOpacity: data.imageOpacity ?? null,
+            imageAccentColor: data.imageAccentColor || null,
+        }).returning();
+
+        // Map result to Component type (convert Date to string)
+        const mappedResult = {
+            ...result,
+            createdAt: result.createdAt.toISOString(),
+            updatedAt: result.updatedAt.toISOString(),
+        };
 
         const response: ApiResponse<Component> = {
             success: true,
-            data: result.rows[0],
+            data: mappedResult as unknown as Component,
         };
 
         return NextResponse.json(response, { status: 201 });
